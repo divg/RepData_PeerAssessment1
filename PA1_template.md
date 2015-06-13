@@ -1,4 +1,9 @@
-# Reproducible Research: Peer Assessment 1
+---
+title: "Reproducible Research: Peer Assessment 1"
+author: 
+output: html_document
+keep_md: true
+---
 
 ## Loading and preprocessing the data
 Lets read the Activity data into a data frame.   
@@ -14,6 +19,7 @@ str(activity)
 ##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
+
 
 
 ## What is mean total number of steps taken per day?
@@ -55,7 +61,7 @@ StepsPerDay
 hist(StepsPerDay)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
 
 3. Lets calculate mean and median. 
 
@@ -63,9 +69,9 @@ hist(StepsPerDay)
 avg1 = mean(StepsPerDay)
 med1 = median(StepsPerDay)
 ```
-*Mean of total number of steps taken per day is **9354.2295082**.*
+Mean of total number of steps taken per day is **9354.2295082**.
 
-*Median of total number of steps taken per day is 10395.*
+Median of total number of steps taken per day is **10395**.
 
 
 
@@ -78,14 +84,15 @@ AvgStepsPerInterval = tapply(activity$steps, activity$interval, mean, na.rm=T)
 plot(names(AvgStepsPerInterval), AvgStepsPerInterval )
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
 
 2. Lets check which interval has max. avg. number of steps. 
 
 ```r
 MaxAvgStepsInterval = names(AvgStepsPerInterval)[which.max(AvgStepsPerInterval)]
 ```
-** The 5-minute interval, on average across all the days in the dataset, that contains the maximum number of steps is 835. **
+The 5-minute interval, on average across all the days in the dataset, that contains the maximum number of steps is **835**.
+
 
 
 ## Imputing missing values
@@ -95,7 +102,7 @@ MaxAvgStepsInterval = names(AvgStepsPerInterval)[which.max(AvgStepsPerInterval)]
 ```r
 RowsMissingValues=sum(is.na(activity))
 ```
-** Total number of missing values is 2304. **
+Total number of missing values is **2304**.
 
 2. Lets look at the boxplots to devise a simple imputation strategy for missing values. 
 
@@ -104,23 +111,19 @@ boxplot(activity$steps ~ activity$date)
 abline(lm(activity$steps ~ activity$date))
 ```
 
-```
-## Warning in abline(lm(activity$steps ~ activity$date)): only using the first
-## two of 53 regression coefficients
-```
-
-![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png) 
 
 ```r
 boxplot(activity$steps ~ activity$interval)
 abline(lm(activity$steps ~ activity$interval))
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-8-2.png) 
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-2.png) 
 
-* We will impute missing values with the median for the interval as steps per interval values seems to have less variability as compared to steps per date.  * 
+* We will impute missing values with the median for the interval as steps per interval values seems to have less variability as compared to steps per date.
 
-Next we will calculate the median steps per interval as per above strategy.
+
+* Next we will calculate the median steps per interval as per above strategy.
 
 ```r
 MedianStepsPerInterval = tapply(activity$steps, activity$interval, median, na.rm=T)
@@ -171,9 +174,10 @@ StepsPerDay_New
 hist(StepsPerDay_New)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
 
-Now lets check how steps per day have changed due to imputation. 
+
+* Now lets check how steps per day have changed due to imputation. 
 
 ```r
 newMean = mean(StepsPerDay_New)
@@ -182,11 +186,12 @@ diffMean = mean(StepsPerDay_New) - mean(StepsPerDay)
 diffMedian = median(StepsPerDay_New) - median(StepsPerDay)
 ```
 
-* The new mean and median total number of steps taken per day are 9503.8688525 and 10395 respectively. * 
+The new mean and median total number of steps taken per day are **9503.8688525** and **10395** respectively.
 
-* By imputing missing data, the mean has changed by 149.6393443 and the median has changed by 0. * 
+By imputing missing data, the mean has changed by **149.6393443** and the median has changed by **0**.
 
-The mean and the standard deviation for total daily number of steps have changed as seen below: 
+
+* The mean and the standard deviation for total daily number of steps have changed as seen below: 
 
 ```r
 summary(StepsPerDay)
@@ -222,6 +227,7 @@ sd(StepsPerDay_New)
 ## [1] 5150.567
 ```
 
+
 ## Are there differences in activity patterns between weekdays and weekends?
 
 1. Lets create a new factor variable indicating whether a given date is a weekday or weekend. 
@@ -237,13 +243,6 @@ activityNew$dayofweek = ifelse((weekdays(x = strptime(activityNew$date,"%Y-%m-%d
 
 ```r
 require(ggplot2)
-```
-
-```
-## Loading required package: ggplot2
-```
-
-```r
 g = ggplot(data = activityNew, aes(interval, steps, group=dayofweek))
 g + stat_summary(fun.y=mean, geom="line") + 
   facet_grid(dayofweek ~ .) +  
@@ -252,6 +251,7 @@ g + stat_summary(fun.y=mean, geom="line") +
   ggtitle("Average no. of steps taken on weekday vs. weekend") 
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-15-1.png) 
+![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15-1.png) 
 
-### --- End of report ---
+
+--- End of report ---
