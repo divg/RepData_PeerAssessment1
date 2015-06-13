@@ -1,25 +1,141 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+author: 
+output: html_document
+keep_md: true
 ---
 
 
 ## Loading and preprocessing the data
+Lets read the Activity data into a data frame.   
+```{r}
+activity = read.csv("activity.csv")
+str(activity)
+```
 
 
 
 ## What is mean total number of steps taken per day?
+1. Lets calculate the total number of steps per day. 
+```{r}
+StepsPerDay = tapply(activity$steps, activity$date, sum, na.rm=T)
+StepsPerDay
+```
+
+2. Histogram of the total number of steps taken each day.
+```{r}
+hist(StepsPerDay)
+```
+
+3. Lets calculate mean and median. 
+```{r}
+avg1 = mean(StepsPerDay)
+med1 = median(StepsPerDay)
+```
+Mean of total number of steps taken per day is **`r avg1`**.
+
+Median of total number of steps taken per day is **`r med1`**.
 
 
 
 ## What is the average daily activity pattern?
 
+1. Here's a time series plot of 5-minute intervals and average number of steps taken, averaged across all days.
+```{r}
+AvgStepsPerInterval = tapply(activity$steps, activity$interval, mean, na.rm=T)
+plot(names(AvgStepsPerInterval), AvgStepsPerInterval )
+```
+
+2. Lets check which interval has max. avg. number of steps. 
+```{r}
+MaxAvgStepsInterval = names(AvgStepsPerInterval)[which.max(AvgStepsPerInterval)]
+```
+The 5-minute interval, on average across all the days in the dataset, that contains the maximum number of steps is **`r MaxAvgStepsInterval`**.
+
 
 
 ## Imputing missing values
 
+1. Lets calculate total number of missing values. 
+```{r}
+RowsMissingValues=sum(is.na(activity))
+```
+Total number of missing values is **`r  RowsMissingValues`**.
+
+2. Lets look at the boxplots to devise a simple imputation strategy for missing values. 
+```{r}
+boxplot(activity$steps ~ activity$date)
+abline(lm(activity$steps ~ activity$date))
+boxplot(activity$steps ~ activity$interval)
+abline(lm(activity$steps ~ activity$interval))
+```
+
+* We will impute missing values with the median for the interval as steps per interval values seems to have less variability as compared to steps per date.
+
+
+* Next we will calculate the median steps per interval as per above strategy.
+```{r}
+MedianStepsPerInterval = tapply(activity$steps, activity$interval, median, na.rm=T)
+```
+
+3. Now we will create a new dataset that is equal to the original dataset but with the missing data filled in. 
+```{r}
+activityNew = activity
+for (i in seq(0,2355,by=5)) {
+  activityNew$steps[is.na(activityNew$steps) & activityNew$interval==i] = MedianStepsPerInterval[names(MedianStepsPerInterval)==i]
+}
+```
+
+4. Histogram of the total number of steps taken each day.
+```{r}
+StepsPerDay_New = tapply(activityNew$steps, activityNew$date, sum, na.rm=T)
+StepsPerDay_New
+hist(StepsPerDay_New)
+```
+
+
+* Now lets check how steps per day have changed due to imputation. 
+```{r}
+newMean = mean(StepsPerDay_New)
+newMedian = median(StepsPerDay_New)
+diffMean = mean(StepsPerDay_New) - mean(StepsPerDay)
+diffMedian = median(StepsPerDay_New) - median(StepsPerDay)
+```
+
+The new mean and median total number of steps taken per day are **`r newMean`** and **`r newMedian`** respectively.
+
+By imputing missing data, the mean has changed by **`r diffMean`** and the median has changed by **`r diffMedian`**.
+
+
+* The mean and the standard deviation for total daily number of steps have changed as seen below: 
+```{r}
+summary(StepsPerDay)
+summary(StepsPerDay_New)
+sd(StepsPerDay)
+sd(StepsPerDay_New)
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+1. Lets create a new factor variable indicating whether a given date is a weekday or weekend. 
+```{r}
+activityNew$dayofweek = ifelse((weekdays(x = strptime(activityNew$date,"%Y-%m-%d")) %in% 
+                              c("Saturday", "Sunday")), 
+                            "weekend",
+                            "weekday")
+```
+
+2. Here's the plot of 5-min interval and average number of steps taken, averaged across all weekdays or weekends. 
+```{r}
+require(ggplot2)
+g = ggplot(data = activityNew, aes(interval, steps, group=dayofweek))
+g + stat_summary(fun.y=mean, geom="line") + 
+  facet_grid(dayofweek ~ .) +  
+  xlab("Interval") +
+  ylab("No. of steps") +
+  ggtitle("Average no. of steps taken on weekday vs. weekend") 
+```
+
+
+--- End of report ---
